@@ -1,5 +1,5 @@
 {
-  "name": "entity-id",
+  "name": "type-id",
   "version": "0.1.0",
   "description": "TypeScript-first toolkit for typed, prefixed entity IDs like task_a3f9bc",
   "keywords": ["id", "entity", "prefix", "typescript", "typed"],
