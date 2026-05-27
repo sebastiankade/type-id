@@ -34,22 +34,14 @@ const encodeBase62Fixed = (n: number, width: number): string => {
   return out;
 };
 
-export const DEFAULT_CONFIG: Required<Config> = {
-  // For length > TIMESTAMP_WIDTH (8): emits an 8-char base62-encoded millisecond
-  // timestamp followed by cryptographic random chars. Because the alphabet is
-  // ASCII-ordered and the timestamp occupies the high bits, lexicographic sort
-  // approximates chronological sort — improving DB index locality (à la UUIDv7).
-  // For length ≤ 8: emits pure random chars (no timestamp prefix).
-  generateId: (length: number): string => {
-    const ts =
-      length > TIMESTAMP_WIDTH
-        ? encodeBase62Fixed(Date.now(), TIMESTAMP_WIDTH)
-        : "";
-    const randomLen = length - ts.length;
-    const bytes = getRandomBytes(randomLen);
-    let rand = "";
-    for (let i = 0; i < randomLen; i++) rand += BASE62[bytes[i] % 62];
-    return ts + rand;
-  },
-  defaultLength: MAX_SUFFIX_LENGTH,
+export const generateId = (length: number): string => {
+  const ts =
+    length > TIMESTAMP_WIDTH
+      ? encodeBase62Fixed(Date.now(), TIMESTAMP_WIDTH)
+      : "";
+  const randomLen = length - ts.length;
+  const bytes = getRandomBytes(randomLen);
+  let rand = "";
+  for (let i = 0; i < randomLen; i++) rand += BASE62[bytes[i] % 62];
+  return ts + rand;
 };

@@ -1,11 +1,16 @@
 import { EntityConfig, Maybe, Config, Instance, Prefix, ID } from "./types";
-import { DEFAULT_CONFIG } from "./defaults";
+import { generateId, MAX_SUFFIX_LENGTH } from "./defaults";
 
 export const configure = <T extends string | symbol>(
   entityConfigs: Record<T, EntityConfig>,
   config: Config = {},
 ): Instance<T> => {
-  const finalConfig = { ...DEFAULT_CONFIG, ...config };
+  // Apply the defaults
+  const finalConfig = {
+    generateId,
+    defaultLength: MAX_SUFFIX_LENGTH,
+    ...config,
+  };
 
   const typeToPrefix = {} as Record<T, Prefix>;
   const typeToLength = {} as Record<T, number>;
@@ -50,13 +55,10 @@ export const configure = <T extends string | symbol>(
     return parts.length < 2 ? undefined : parts.slice(1).join("_");
   };
 
-  const isId = (id: Maybe<string>): boolean =>
+  const isTypeId = (id: Maybe<string>): boolean =>
     !!id && !!id.match(HUMAN_ID_REGEX_EXACT);
 
-  const isTypeId =
-    (type: T) =>
-    (id: string): boolean =>
-      toType(id) === type;
+  const isTypeOf = (id: string, type: T): boolean => toType(id) === type;
 
   const extractIds = (text: string): string[] =>
     text.match(HUMAN_ID_REGEX)?.filter(Boolean) ?? [];
@@ -68,8 +70,8 @@ export const configure = <T extends string | symbol>(
     toPrefix,
     toUniqPart,
     toType,
-    isId,
     isTypeId,
+    isTypeOf,
     extractIds,
   };
 };

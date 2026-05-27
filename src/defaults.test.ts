@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   BASE62,
-  DEFAULT_CONFIG,
+  generateId,
   MAX_SUFFIX_LENGTH,
   TIMESTAMP_WIDTH,
 } from "./defaults";
@@ -42,89 +42,72 @@ describe("BASE62", () => {
   });
 });
 
-describe("DEFAULT_CONFIG", () => {
-  describe("defaultLength", () => {
-    it("equals MAX_SUFFIX_LENGTH", () => {
-      expect(DEFAULT_CONFIG.defaultLength).toBe(MAX_SUFFIX_LENGTH);
+describe("generateId", () => {
+  it("returns a string of exactly the requested length", () => {
+    for (const len of [
+      4,
+      6,
+      TIMESTAMP_WIDTH,
+      TIMESTAMP_WIDTH + 1,
+      16,
+      MAX_SUFFIX_LENGTH,
+    ]) {
+      expect(generateId(len)).toHaveLength(len);
+    }
+  });
+
+  it("uses only base62 characters", () => {
+    const id = generateId(MAX_SUFFIX_LENGTH);
+    expect(id).toMatch(/^[0-9A-Za-z]+$/);
+  });
+
+  it("generates unique IDs", () => {
+    const ids = new Set(
+      Array.from({ length: 100 }, () => generateId(MAX_SUFFIX_LENGTH)),
+    );
+    expect(ids.size).toBe(100);
+  });
+
+  describe("for length > TIMESTAMP_WIDTH", () => {
+    it("encodes the current timestamp in the first chars", () => {
+      const before = Date.now();
+      const id = generateId(MAX_SUFFIX_LENGTH);
+      const after = Date.now();
+      const decoded = decodeBase62(id.slice(0, TIMESTAMP_WIDTH));
+      expect(decoded).toBeGreaterThanOrEqual(before);
+      expect(decoded).toBeLessThanOrEqual(after);
+    });
+
+    it("IDs sort chronologically (earlier < later lexicographically)", () => {
+      vi.spyOn(Date, "now")
+        .mockReturnValueOnce(1_000_000)
+        .mockReturnValueOnce(2_000_000);
+      const earlier = generateId(MAX_SUFFIX_LENGTH);
+      const later = generateId(MAX_SUFFIX_LENGTH);
+      expect(earlier < later).toBe(true);
+    });
+
+    it("IDs with the same timestamp still differ (random suffix)", () => {
+      vi.spyOn(Date, "now").mockReturnValue(1_748_217_600_000);
+      const ids = new Set(
+        Array.from({ length: 50 }, () => generateId(MAX_SUFFIX_LENGTH)),
+      );
+      expect(ids.size).toBe(50);
     });
   });
 
-  describe("generateId", () => {
-    it("returns a string of exactly the requested length", () => {
-      for (const len of [
-        4,
-        6,
-        TIMESTAMP_WIDTH,
-        TIMESTAMP_WIDTH + 1,
-        16,
-        MAX_SUFFIX_LENGTH,
-      ]) {
-        expect(DEFAULT_CONFIG.generateId(len)).toHaveLength(len);
-      }
-    });
-
-    it("uses only base62 characters", () => {
-      const id = DEFAULT_CONFIG.generateId(MAX_SUFFIX_LENGTH);
-      expect(id).toMatch(/^[0-9A-Za-z]+$/);
-    });
-
-    it("generates unique IDs", () => {
+  describe("for length <= TIMESTAMP_WIDTH", () => {
+    it("does not use a timestamp prefix (output varies even at fixed time)", () => {
+      vi.spyOn(Date, "now").mockReturnValue(1_748_217_600_000);
       const ids = new Set(
-        Array.from({ length: 100 }, () =>
-          DEFAULT_CONFIG.generateId(MAX_SUFFIX_LENGTH),
-        ),
+        Array.from({ length: 20 }, () => generateId(TIMESTAMP_WIDTH)),
       );
-      expect(ids.size).toBe(100);
+      expect(ids.size).toBeGreaterThan(1);
     });
 
-    describe("for length > TIMESTAMP_WIDTH", () => {
-      it("encodes the current timestamp in the first chars", () => {
-        const before = Date.now();
-        const id = DEFAULT_CONFIG.generateId(MAX_SUFFIX_LENGTH);
-        const after = Date.now();
-        const decoded = decodeBase62(id.slice(0, TIMESTAMP_WIDTH));
-        expect(decoded).toBeGreaterThanOrEqual(before);
-        expect(decoded).toBeLessThanOrEqual(after);
-      });
-
-      it("IDs sort chronologically (earlier < later lexicographically)", () => {
-        vi.spyOn(Date, "now")
-          .mockReturnValueOnce(1_000_000)
-          .mockReturnValueOnce(2_000_000);
-        const earlier = DEFAULT_CONFIG.generateId(MAX_SUFFIX_LENGTH);
-        const later = DEFAULT_CONFIG.generateId(MAX_SUFFIX_LENGTH);
-        expect(earlier < later).toBe(true);
-      });
-
-      it("IDs with the same timestamp still differ (random suffix)", () => {
-        vi.spyOn(Date, "now").mockReturnValue(1_748_217_600_000);
-        const ids = new Set(
-          Array.from({ length: 50 }, () =>
-            DEFAULT_CONFIG.generateId(MAX_SUFFIX_LENGTH),
-          ),
-        );
-        expect(ids.size).toBe(50);
-      });
-    });
-
-    describe("for length <= TIMESTAMP_WIDTH", () => {
-      it("does not use a timestamp prefix (output varies even at fixed time)", () => {
-        // If a timestamp prefix were used, all IDs generated at the same ms
-        // would be identical (no random component). With pure random generation
-        // they will almost certainly differ.
-        vi.spyOn(Date, "now").mockReturnValue(1_748_217_600_000);
-        const ids = new Set(
-          Array.from({ length: 20 }, () =>
-            DEFAULT_CONFIG.generateId(TIMESTAMP_WIDTH),
-          ),
-        );
-        expect(ids.size).toBeGreaterThan(1);
-      });
-
-      it("still uses only base62 characters", () => {
-        const id = DEFAULT_CONFIG.generateId(6);
-        expect(id).toMatch(/^[0-9A-Za-z]{6}$/);
-      });
+    it("still uses only base62 characters", () => {
+      const id = generateId(6);
+      expect(id).toMatch(/^[0-9A-Za-z]{6}$/);
     });
   });
 });

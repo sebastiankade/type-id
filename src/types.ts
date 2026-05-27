@@ -14,8 +14,8 @@ export interface Instance<T> {
   newId: (type: T, suffix?: string) => ID;
   toType: (id: Maybe<ID>) => Maybe<T>;
   toPrefix: (type: T) => Prefix;
-  isId: (id: Maybe<string>) => boolean;
+  isTypeId: (id: Maybe<string>) => boolean;
   toUniqPart: (id: Maybe<ID>) => Maybe<string>;
-  isTypeId: (type: T) => (id: string) => boolean;
+  isTypeOf: (id: string, type: T) => boolean;
   extractIds: (text: string) => ID[];
 }

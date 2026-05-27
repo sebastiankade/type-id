@@ -40,39 +40,37 @@ describe("toType", () => {
   });
 });
 
-describe("isId", () => {
+describe("isTypeId", () => {
   it("validates a known id", () => {
     const id = ids.newId("task", "abcd1234");
-    expect(ids.isId(id)).toBe(true);
+    expect(ids.isTypeId(id)).toBe(true);
   });
 
   it("rejects unknown prefix", () => {
-    expect(ids.isId("foo_abcd1234")).toBe(false);
+    expect(ids.isTypeId("foo_abcd1234")).toBe(false);
   });
 
   it("rejects undefined", () => {
-    expect(ids.isId(undefined)).toBe(false);
+    expect(ids.isTypeId(undefined)).toBe(false);
   });
 
   it("rejects suffix that is too short", () => {
-    expect(ids.isId("task_ab")).toBe(false);
+    expect(ids.isTypeId("task_ab")).toBe(false);
   });
 });
 
-describe("isTypeId", () => {
+describe("isTypeOf", () => {
   it("returns true for matching type", () => {
-    const isTask = ids.isTypeId("task");
-    expect(isTask("task_abcd1234")).toBe(true);
+    expect(ids.isTypeOf("task_abcd1234", "task")).toBe(true);
   });
 
   it("returns false for different type", () => {
-    const isTask = ids.isTypeId("task");
-    expect(isTask("proj_abcd1234")).toBe(false);
+    expect(ids.isTypeOf("proj_abcd1234", "task")).toBe(false);
   });
 
   it("works as array filter predicate", () => {
     const mixed = ["task_aaa11111", "proj_bbb22222", "task_ccc33333"];
-    const tasks = mixed.filter(ids.isTypeId("task"));
+    const tasks = mixed.filter((id) => ids.isTypeOf(id, "task"));
     expect(tasks).toEqual(["task_aaa11111", "task_ccc33333"]);
   });
 });

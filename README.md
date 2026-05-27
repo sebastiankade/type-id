@@ -1,6 +1,6 @@
 # type-id
 
-A tiny TypeScript utility for creating and managing typed, prefixed human-readable IDs (e.g. `t_a3f9bc12`, `tm_x8k2`).
+A tiny TypeScript utility for creating and managing typed, prefixed human-readable IDs (e.g. `t_01Jz4K8mA3f9bc`, `tm_x8k2f1`).
 
 Schema-first: define your entity types and prefixes once via `configure()`, get back a fully typed toolkit.
 
@@ -24,46 +24,42 @@ export const {
   toType,
   toPrefix,
   toUniqPart,
-  isId,
   isTypeId,
+  isTypeOf,
   extractIds,
 } = configure({
-  task: "task",
+  task: "t",
   user: ["tm", 6], // [prefix, idLength] — shorter IDs for users
-  project: "proj",
+  project: "p",
 });
 ```
 
 **Anywhere else in your project:**
 
 ```typescript
-import { newId, toType, isTypeId, extractIds } from "./ids";
+import { newId, toType, isTypeOf, extractIds } from "./ids";
 
 // Generate IDs
-const taskId = newId("task"); // "task_01Jz4K8mA3f9bc"
+const taskId = newId("task"); // "t_01Jz4K8mA3f9bc"
 const userId = newId("user"); // "tm_x8k2f1"
-const projId = newId("project"); // "proj_01Jz4K8m9bc1a3"
+const projId = newId("project"); // "p_01Jz4K8m9bc1a3"
 
 // With your own suffix
-newId("task", "my-custom-suffix"); // "task_my-custom-suffix"
+newId("task", "my-custom-suffix"); // "t_my-custom-suffix"
 
 // Inspect IDs
-toType("task_01Jz4K8mA3f9bc"); // "task"
+toType("t_01Jz4K8mA3f9bc"); // "task"
 toType("unknown_foo"); // undefined
 
 // Validate
-isId("task_01Jz4K8mA3f9bc"); // true
-isId("random string"); // false
-isTypeId("task")("task_01Jz4K8mA3f9bc"); // true
-isTypeId("task")("proj_01Jz4K8m9bc1a3"); // false
-
-// Filter arrays by type
-const mixed = ["task_aaa11111", "proj_bbb22222", "task_ccc33333"];
-mixed.filter(isTypeId("task")); // ["task_aaa11111", "task_ccc33333"]
+isTypeId("t_01Jz4K8mA3f9bc"); // true
+isTypeId("random string"); // false
+isTypeOf("t_01Jz4K8mA3f9bc", "task"); // true
+isTypeOf("p_01Jz4K8m9bc1a3", "task"); // false
 
 // Extract IDs from text
-extractIds("See task_01Jz4K8mA3f9bc and proj_01Jz4K8m9bc1a3 for context.");
-// ["task_01Jz4K8mA3f9bc", "proj_01Jz4K8m9bc1a3"]
+extractIds("See t_01Jz4K8mA3f9bc and p_01Jz4K8m9bc1a3 for context.");
+// ["t_01Jz4K8mA3f9bc", "p_01Jz4K8m9bc1a3"]
 ```
 
 ## API
@@ -78,23 +74,23 @@ Maps each entity type to its prefix, or a `[prefix, idLength]` tuple for per-typ
 
 ```typescript
 configure({
-  task: "task", // uses defaultLength
+  task: "t", // uses defaultLength
   user: ["tm", 6], // always 6 chars
-  project: "proj",
+  project: "p",
 });
 ```
 
 **`config`** (optional):
 
-| Option          | Default                      | Description                                                                       |
-| --------------- | ---------------------------- | --------------------------------------------------------------------------------- |
-| `defaultLength` | `8`                          | Random suffix character count                                                     |
-| `generateId`    | `Math.random().toString(36)` | Custom `(length: number) => string` — inject `nanoid` or `crypto.randomUUID` here |
+| Option          | Default                            | Description                                                                       |
+| --------------- | ---------------------------------- | --------------------------------------------------------------------------------- |
+| `defaultLength` | `22`                               | Suffix character count (default is UUID-level entropy)                            |
+| `generateId`    | time-ordered base62 (UUIDv7-style) | Custom `(length: number) => string` — inject `nanoid` or `crypto.randomUUID` here |
 
 ```typescript
 import { nanoid } from "nanoid";
 
-const ids = configure({ task: "task" }, { generateId: (len) => nanoid(len) });
+const ids = configure({ task: "t" }, { generateId: (len) => nanoid(len) });
 ```
 
 ### Methods on `Instance<T>`
@@ -104,8 +100,8 @@ const ids = configure({ task: "task" }, { generateId: (len) => nanoid(len) });
 | `newId(type, suffix?)` | Generate a new ID; optionally provide your own suffix          |
 | `toType(id)`           | Extract entity type from ID string (`undefined` if unknown)    |
 | `toPrefix(type)`       | Get the prefix string for a type                               |
-| `isId(id)`             | Returns `true` if string matches any registered prefix pattern |
-| `isTypeId(type)(id)`   | Curried type predicate — useful for array `.filter()`          |
+| `isTypeId(id)`         | Returns `true` if string matches any registered prefix pattern |
+| `isTypeOf(id, type)`   | Returns `true` if the ID belongs to the given type             |
 | `toUniqPart(id)`       | Extract the unique suffix after the prefix                     |
 | `extractIds(text)`     | Find all valid IDs embedded in a longer text string            |
 | `HUMAN_ID_REGEX`       | Compiled global `RegExp` for matching IDs inline in text       |
