@@ -10,7 +10,7 @@ const ids = configure({
 describe("newId", () => {
   it("returns prefix_suffix format", () => {
     const id = ids.newId("task");
-    expect(id).toMatch(/^task_[a-z0-9]+$/);
+    expect(id).toMatch(/^task_[a-zA-Z0-9]+$/);
   });
 
   it("uses provided suffix", () => {

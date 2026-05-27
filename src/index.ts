@@ -1,12 +1,5 @@
 import { EntityConfig, Maybe, Config, Instance, Prefix, ID } from "./types";
-
-const DEFAULT_CONFIG: Required<Config> = {
-  generateId: (length: number) =>
-    Math.random()
-      .toString(36)
-      .substring(2, 2 + length),
-  defaultLength: 8,
-};
+import { DEFAULT_CONFIG } from "./defaults";
 
 export const configure = <T extends string | symbol>(
   entityConfigs: Record<T, EntityConfig>,
@@ -30,7 +23,7 @@ export const configure = <T extends string | symbol>(
 
   const prefixes = Object.keys(prefixToType).join("|");
   const buildRegex = (exact: boolean = false) => {
-    const pattern = `${exact ? "^" : "\\b"}(${prefixes})_[a-zA-Z0-9]{4,13}${exact ? "$" : "\\b"}`;
+    const pattern = `${exact ? "^" : "\\b"}(${prefixes})_[a-zA-Z0-9]{4,}${exact ? "$" : "\\b"}`;
     return new RegExp(pattern, "g");
   };
 
