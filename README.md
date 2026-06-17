@@ -1,4 +1,4 @@
-# typx-id
+# Type-id
 
 A tiny TypeScript utility for creating and managing type-prefixed, human-readable IDs (e.g. `t_01Jz4K8mA3f9bc`, `tm_x8k2f1`).
 
