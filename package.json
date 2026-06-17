@@ -1,6 +1,6 @@
 {
   "name": "@seasb/type-id",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TypeScript-first toolkit for type-prefixed human-readable IDs that map to your system entity types (e.g. t_a3f9bc)",
   "keywords": [
     "id",
