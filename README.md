@@ -1,6 +1,6 @@
-# type-id
+# typx-id
 
-A tiny TypeScript utility for creating and managing typed, prefixed human-readable IDs (e.g. `t_01Jz4K8mA3f9bc`, `tm_x8k2f1`).
+A tiny TypeScript utility for creating and managing type-prefixed, human-readable IDs (e.g. `t_01Jz4K8mA3f9bc`, `tm_x8k2f1`).
 
 Schema-first: define your entity types and prefixes once via `configure()`, get back a fully typed toolkit.
 
